@@ -14,7 +14,11 @@ impl Blog {
             egui::menu::bar(ui, |ui| {
                 ui.selectable_value(&mut self.cuisine.selected, Plats::About, "À propos");
                 ui.selectable_value(&mut self.cuisine.selected, Plats::PateBrisee, "Pâte brisée");
-                ui.selectable_value(&mut self.cuisine.selected, Plats::TarteAuCitron, "Tarte au citron meringuée");
+                ui.selectable_value(
+                    &mut self.cuisine.selected,
+                    Plats::TarteAuCitron,
+                    "Tarte au citron meringuée",
+                );
             });
         });
         egui::TopBottomPanel::bottom("bottom_cuisine_panel").show(ctx, |ui| {
@@ -25,7 +29,7 @@ impl Blog {
             }
         });
 
-        egui::CentralPanel::default().show(ctx, |ui| 
+        egui::CentralPanel::default().show(ctx, |ui|
             ScrollArea::both().show(ui, |ui| {
                 match self.cuisine.selected {
                     Plats::About => self.display_text_content(ui, |_this, ui| {
@@ -55,4 +59,3 @@ enum Plats {
     PateBrisee,
     TarteAuCitron,
 }
-
