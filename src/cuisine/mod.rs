@@ -34,8 +34,8 @@ impl Blog {
             ScrollArea::both().show(ui, |ui| {
                 match self.cuisine.selected {
                     Plats::About => self.display_text_content(ui, |_this, ui| {
-                            ui.heading("Hey, this section is just a list of recipee's I like and am bored to find again on the internet.");
-                            ui.heading("It's going to be in french sorry.");
+                            ui.heading("Hey, this section is just a list of recipe's I like and am bored to find again on the internet.");
+                            ui.heading("It's going to be in french sorry bye.");
                         }),
                     Plats::PateBrisee => self.cuisine.pate_brisee.display(ui),
                     Plats::TarteAuCitron => self.cuisine.tarte_au_citron.display(ui),
