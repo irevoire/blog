@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 mod pate_brisee;
 mod tarte_au_citron;
 
-use crate::Blog;
+use crate::{centered_scrollable, Blog};
 
 use self::pate_brisee::PateBrisee;
 use self::tarte_au_citron::TarteAuCitron;
@@ -33,7 +33,7 @@ impl Blog {
         egui::CentralPanel::default().show(ctx, |ui|
             ScrollArea::both().show(ui, |ui| {
                 match self.cuisine.selected {
-                    Plats::About => self.display_text_content(ui, |_this, ui| {
+                    Plats::About => centered_scrollable(ui, |ui| {
                             ui.heading("Hey, this section is just a list of recipe's I like and am bored to find again on the internet.");
                             ui.heading("It's going to be in french sorry bye.");
                         }),

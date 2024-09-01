@@ -3,18 +3,18 @@ use egui_plot::{Legend, MarkerShape, Plot, Points};
 use rand::{rngs::StdRng, Rng, SeedableRng};
 use serde::{Deserialize, Serialize};
 
-use crate::Blog;
+use crate::{centered_scrollable, Blog};
 
 impl Blog {
     pub fn display_arroy_article(&mut self, ctx: &Context) {
         egui::CentralPanel::default().show(ctx, |ui| {
-            self.display_text_content(ui, |this, ui| {
+            centered_scrollable(ui, | ui| {
                 ui.heading("Hey, in this article we're going to see the big principles of Arroy.");
                 ui.heading("Two means");
                 ui.label("The principle of « two means » is to compute a barycenter.");
                 ui.label("As a reminder, here's an algorithm showing how to find the barycenter of a buch of points");
                 ui.small("For our example we considers that all the points have the same weights");
-                this.arroy.charts.barycenter.show(ui);
+                self.arroy.charts.barycenter.show(ui);
             });
         });
     }
