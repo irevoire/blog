@@ -1,6 +1,7 @@
 use egui::{Context, SidePanel, TopBottomPanel, Ui};
 use egui_plot::{Legend, MarkerShape, Plot, Points};
 use rand::{rngs::StdRng, Rng, SeedableRng};
+use serde::{Deserialize, Serialize};
 
 use crate::Blog;
 
@@ -19,17 +20,17 @@ impl Blog {
     }
 }
 
-#[derive(Default)]
+#[derive(Default, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct Arroy {
     charts: Charts,
 }
 
-#[derive(Default)]
+#[derive(Default, Serialize, Deserialize, Clone, PartialEq, Eq)]
 struct Charts {
     barycenter: BaryCenter,
 }
 
-#[derive(Debug, derivative::Derivative)]
+#[derive(Debug, derivative::Derivative, Serialize, Deserialize, Clone, PartialEq, Eq)]
 #[derivative(Default)]
 struct BaryCenter {
     seed: u64,

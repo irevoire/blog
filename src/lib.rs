@@ -4,20 +4,24 @@ mod cuisine;
 use arroy::Arroy;
 use eframe::CreationContext;
 use egui::{Context, Margin, Ui};
+use serde::{Deserialize, Serialize};
 
-#[derive(derivative::Derivative)]
+#[derive(derivative::Derivative, Serialize, Deserialize, Clone, PartialEq)]
 #[derivative(Default)]
 pub struct Blog {
     main_article: Article,
     #[derivative(Default(value = "850.0"))]
+    #[serde(skip)]
     text_width: f32,
     #[derivative(Default(value = "false"))]
+    #[serde(skip)]
     text_width_selected: bool,
+    #[serde(skip)]
     arroy: Arroy,
     cuisine: cuisine::Cuisine,
 }
 
-#[derive(Default, PartialEq, Eq)]
+#[derive(Default, PartialEq, Eq, Serialize, Deserialize, Clone, Copy)]
 pub enum Article {
     #[default]
     Main,
@@ -27,6 +31,9 @@ pub enum Article {
 
 impl eframe::App for Blog {
     fn update(&mut self, ctx: &Context, _frame: &mut eframe::Frame) {
+        #[allow(unused_variables)]
+        let old = self.clone();
+
         egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
             let max_width = ui.available_width();
             egui::menu::bar(ui, |ui| {
@@ -63,12 +70,45 @@ impl eframe::App for Blog {
             Article::Arroy => self.display_arroy_article(ctx),
             Article::Cuisine => self.display_cuisine_article(ctx),
         }
+
+        #[cfg(target_arch = "wasm32")]
+        if &old != self {
+            use web_sys::wasm_bindgen::JsValue;
+
+            if let Some(window) = web_sys::window() {
+                if let Ok(history) = window.history() {
+                    let url = window.location().href().unwrap();
+                    let url = web_sys::Url::new(&url).unwrap();
+                    let state = serde_json::to_string(&self).unwrap();
+                    url.search_params().set("state", &state);
+                    history
+                        .push_state_with_url(
+                            &JsValue::null(),
+                            "",
+                            url.to_string().as_string().as_deref(),
+                        )
+                        .unwrap();
+                }
+            }
+        }
     }
 }
 
 impl Blog {
     pub fn new(_cc: &CreationContext) -> Self {
-        Self::default()
+        #[allow(unused_mut)]
+        let mut this = None;
+        #[cfg(target_arch = "wasm32")]
+        {
+            if let Some(window) = web_sys::window() {
+                let url = window.location().href().unwrap();
+                let url = web_sys::Url::new(&url).unwrap();
+                if let Some(state) = url.search_params().get("state") {
+                    this = serde_json::from_str(&state).ok();
+                }
+            }
+        }
+        this.unwrap_or_default()
     }
 
     fn display_text_content(&mut self, ui: &mut Ui, mut f: impl FnMut(&mut Self, &mut Ui)) {

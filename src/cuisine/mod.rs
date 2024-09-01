@@ -1,4 +1,5 @@
 use egui::{Context, ScrollArea};
+use serde::{Deserialize, Serialize};
 
 mod pate_brisee;
 mod tarte_au_citron;
@@ -44,15 +45,17 @@ impl Blog {
     }
 }
 
-#[derive(Default)]
+#[derive(Default, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct Cuisine {
     selected: Plats,
 
+    #[serde(skip)]
     pate_brisee: PateBrisee,
+    #[serde(skip)]
     tarte_au_citron: TarteAuCitron,
 }
 
-#[derive(Default, Clone, Copy, PartialEq, Eq)]
+#[derive(Default, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 enum Plats {
     #[default]
     About,

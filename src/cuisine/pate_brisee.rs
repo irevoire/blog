@@ -1,6 +1,7 @@
 use egui::{Align, Layout, Ui};
+use serde::{Deserialize, Serialize};
 
-#[derive(Default)]
+#[derive(Default, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct PateBrisee {
     // Ingrédients
     /// 200 g de farine

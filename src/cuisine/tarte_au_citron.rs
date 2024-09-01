@@ -1,8 +1,9 @@
 use egui::{Align, Layout, Ui};
+use serde::{Deserialize, Serialize};
 
 use super::pate_brisee::PateBrisee;
 
-#[derive(Default)]
+#[derive(Default, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct TarteAuCitron {
     // List de courses
     /// 200 g de farine
