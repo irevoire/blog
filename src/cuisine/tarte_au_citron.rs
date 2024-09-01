@@ -92,10 +92,13 @@ impl TarteAuCitron {
     }
 
     fn assemblage(&mut self, ui: &mut Ui) {
-        ui.label("1. Préparer 150g de sucre blanc dans un bol");
-        ui.label("2. Commencer a battre 3 blancs d’œufs en neige");
-        ui.label("3. Intégrer la moitié du sucre dans les blancs lorsqu’ils deviennent mousseux");
-        ui.label("4. Intégrer le reste quand les blancs commencent a se tenir");
+        ui.label("1. On met le lemon curd dans le fond de tarte");
+        ui.label(
+            "2. On met la meringue sur le lemon curd qui devrait se tenir après avoir refroidi",
+        );
+        ui.label("3. A l’aide d’une fourchette qu’on va planter a répétition dans la meringue on va venir créer un peu de texture");
+        ui.label("4. On fait cuire la meringue d’un coup de chalumeau ou au four ouvert collé aux résistances");
+        ui.label("5. [optionnel] : On ajoute les zestes de citron vert");
     }
 
     pub fn link_to_original(&self, ui: &mut Ui) {
