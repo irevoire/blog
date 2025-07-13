@@ -15,12 +15,31 @@ pub struct Blog {
     cuisine: cuisine::Cuisine,
 }
 
-#[derive(Default, PartialEq, Eq, Serialize, Deserialize, Clone, Copy)]
+#[derive(Default, PartialEq, Eq, Serialize, Deserialize, Clone, Copy, Debug)]
 pub enum Article {
     #[default]
     Main,
     Arroy,
     Cuisine,
+}
+
+impl Article {
+    pub const fn as_url_part(&self) -> &'static str {
+        match self {
+            Article::Main => "",
+            Article::Arroy => "/arroy",
+            Article::Cuisine => "/cuisine",
+        }
+    }
+
+    pub fn from_url_part(part: &str) -> Option<Self> {
+        match part {
+            "" | "index.html" => Some(Article::Main),
+            "arroy" => Some(Article::Arroy),
+            "cuisine" => Some(Article::Cuisine),
+            _ => None,
+        }
+    }
 }
 
 impl eframe::App for Blog {
@@ -57,7 +76,6 @@ impl eframe::App for Blog {
             Article::Cuisine => self.display_cuisine_article(ctx),
         }
 
-        #[cfg(target_arch = "wasm32")]
         if &old != self {
             use web_sys::wasm_bindgen::JsValue;
 
@@ -65,8 +83,13 @@ impl eframe::App for Blog {
                 if let Ok(history) = window.history() {
                     let url = window.location().href().unwrap();
                     let url = web_sys::Url::new(&url).unwrap();
-                    let state = serde_json::to_string(&self).unwrap();
-                    url.search_params().set("state", &state);
+                    let origin = url.origin();
+                    let url = web_sys::Url::new(&format!("{}{}", origin, self.as_url())).unwrap();
+
+                    log::debug!(
+                        "Setting url to: {:?}",
+                        url.to_string().as_string().as_deref()
+                    );
                     history
                         .push_state_with_url(
                             &JsValue::null(),
@@ -83,18 +106,45 @@ impl eframe::App for Blog {
 impl Blog {
     pub fn new(_cc: &CreationContext) -> Self {
         #[allow(unused_mut)]
-        let mut this = None;
-        #[cfg(target_arch = "wasm32")]
-        {
-            if let Some(window) = web_sys::window() {
-                let url = window.location().href().unwrap();
-                let url = web_sys::Url::new(&url).unwrap();
-                if let Some(state) = url.search_params().get("state") {
-                    this = serde_json::from_str(&state).ok();
+        let mut this = Self::default();
+
+        if let Some(window) = web_sys::window() {
+            let url = window.location().href().unwrap();
+            let url = web_sys::Url::new(&url).unwrap();
+            let path = url.pathname();
+            log::debug!("Making a new blog from path: {}", path);
+            let mut path = path.trim_matches('/').split('/');
+            let page = path
+                .next()
+                .map_or(Article::Main, |part| Article::from_url_part(part).unwrap());
+            log::debug!("Identified current opened page as: {:?}", page);
+            this.main_article = page;
+            match page {
+                Article::Main => {}
+                Article::Arroy => {
+                    this.arroy = arroy::Arroy::from_url_parts(path);
+                }
+                Article::Cuisine => {
+                    this.cuisine = cuisine::Cuisine::from_url_parts(path);
                 }
             }
         }
-        this.unwrap_or_default()
+        this
+    }
+
+    fn as_url(&self) -> String {
+        let mut url = String::from("");
+        url.push_str(self.main_article.as_url_part());
+        match self.main_article {
+            Article::Main => {}
+            Article::Arroy => {
+                url.push_str(self.arroy.as_url_part());
+            }
+            Article::Cuisine => {
+                url.push_str(self.cuisine.as_url_part());
+            }
+        }
+        url
     }
 
     fn display_main_article(&mut self, ctx: &Context) {

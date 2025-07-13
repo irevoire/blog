@@ -4,13 +4,19 @@ version = "0.1.0"
 authors = ["Tamo <irevoire@hotmail.fr>"]
 edition = "2021"
 include = ["LICENSE-APACHE", "LICENSE-MIT", "**/*.rs", "Cargo.toml"]
-rust-version = "1.76"
+rust-version = "1.85"
+
+[toolchain]
+channel = "1.85"
+components = ["rustfmt", "clippy"]
+targets = ["wasm32-unknown-unknown"]
 
 [package.metadata.docs.rs]
 all-features = true
-targets = ["x86_64-unknown-linux-gnu", "wasm32-unknown-unknown"]
+targets = ["wasm32-unknown-unknown"]
 
 [dependencies]
+macros = { path = "macros"}
 egui = "0.28"
 eframe = { version = "0.28", default-features = false, features = [
     "accesskit",     # Make egui compatible with screen readers. NOTE: adds a lot of dependencies.
@@ -27,19 +33,8 @@ serde_json = "1"
 rand = "0.8.5"
 getrandom = { version = "0.2.15", features = ["js"] }
 derivative = "2.2.0"
-
-# native:
-[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-env_logger = "0.10"
-
-# web:
-[target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen-futures = "0.4"
-
-# to access the javascript stdlib
-[target.'cfg(target_arch = "wasm32")'.dependencies.web-sys]
-version = "0.3.4"
-features = ["Window", "Location", "UrlSearchParams", "Url", "History"]
+web-sys = { version = "0.3.4", features = ["Window", "Location", "UrlSearchParams", "Url", "History"]}
 
 [profile.release]
 opt-level = 2 # fast and small wasm
@@ -47,7 +42,6 @@ opt-level = 2 # fast and small wasm
 # Optimize all dependencies even in debug builds:
 [profile.dev.package."*"]
 opt-level = 2
-
 
 [patch.crates-io]
 

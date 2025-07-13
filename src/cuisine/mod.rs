@@ -9,6 +9,10 @@ use crate::{centered_scrollable, Blog};
 use self::pate_brisee::PateBrisee;
 use self::tarte_au_citron::TarteAuCitron;
 
+macros::create_file!(cuisine/index.html);
+macros::create_file!(cuisine/pate-brisee.html);
+macros::create_file!(cuisine/tarte-au-citron.html);
+
 impl Blog {
     pub fn display_cuisine_article(&mut self, ctx: &Context) {
         egui::TopBottomPanel::top("top_cuisine_panel").show(ctx, |ui| {
@@ -55,10 +59,40 @@ pub struct Cuisine {
     tarte_au_citron: TarteAuCitron,
 }
 
+impl Cuisine {
+    pub fn as_url_part(&self) -> &'static str {
+        match self.selected {
+            Plats::About => "",
+            Plats::PateBrisee => "/pate-brisee.html",
+            Plats::TarteAuCitron => "/tarte-au-citron.html",
+        }
+    }
+
+    pub fn from_url_parts(mut parts: std::str::Split<char>) -> Self {
+        let selected = parts
+            .next()
+            .map_or(Plats::About, |part| Plats::from_url_part(part).unwrap());
+        let mut this = Self::default();
+        this.selected = selected;
+        this
+    }
+}
+
 #[derive(Default, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 enum Plats {
     #[default]
     About,
     PateBrisee,
     TarteAuCitron,
+}
+
+impl Plats {
+    fn from_url_part(part: &str) -> Option<Self> {
+        match part {
+            "" | "index.html" => Some(Plats::About),
+            "pate-brisee.html" => Some(Plats::PateBrisee),
+            "tarte-au-citron.html" => Some(Plats::TarteAuCitron),
+            _ => None,
+        }
+    }
 }

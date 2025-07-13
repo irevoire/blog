@@ -5,6 +5,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::{centered_scrollable, Blog};
 
+macros::create_file!(arroy/index.html);
+
 impl Blog {
     pub fn display_arroy_article(&mut self, ctx: &Context) {
         egui::CentralPanel::default().show(ctx, |ui| {
@@ -23,6 +25,17 @@ impl Blog {
 #[derive(Default, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct Arroy {
     charts: Charts,
+}
+
+impl Arroy {
+    pub fn as_url_part(&self) -> &'static str {
+        ""
+    }
+
+    pub fn from_url_parts(_parts: std::str::Split<char>) -> Self {
+        let this = Self::default();
+        this
+    }
 }
 
 #[derive(Default, Serialize, Deserialize, Clone, PartialEq, Eq)]
