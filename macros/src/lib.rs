@@ -10,13 +10,10 @@ pub fn create_file(tokens: TokenStream) -> TokenStream {
     let mut tokens = tokens.into_iter();
     let path = extract_path(&mut tokens).unwrap();
 
-    let file_path = trunk_dist_dir.join(path);
-
-    let index_html_path = current_dir().unwrap().join("dist").join("index.html");
+    let file_path = trunk_dist_dir.join(&path);
     let _ = std::fs::create_dir_all(file_path.parent().unwrap());
 
-    // println!("Running: ln -sn {} {}", index_html_path.display(), file_path.display());
-    Command::new("ln").arg("-sn").arg(index_html_path).arg(file_path).output().unwrap();
+    Command::new("ln").current_dir(trunk_dist_dir).arg("-s").arg("./index.html").arg(path).output().unwrap();
     TokenStream::new()
 }
 
