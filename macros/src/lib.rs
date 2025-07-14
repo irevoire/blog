@@ -13,7 +13,9 @@ pub fn create_file(tokens: TokenStream) -> TokenStream {
     let file_path = trunk_dist_dir.join(&path);
     let _ = std::fs::create_dir_all(file_path.parent().unwrap());
 
-    Command::new("ln").current_dir(trunk_dist_dir).arg("-s").arg("./index.html").arg(path).output().unwrap();
+    let go_back_by = path.chars().filter(|c| *c == '/').count();
+    let relative_path_to_index_html = format!("./{}{}", "../".repeat(go_back_by), "index.html");
+    Command::new("ln").current_dir(trunk_dist_dir).arg("-sf").arg(relative_path_to_index_html).arg(path).output().unwrap();
     TokenStream::new()
 }
 
