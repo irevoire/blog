@@ -53,8 +53,8 @@ impl eframe::App for Blog {
         let old = self.clone();
 
         egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
-            egui::menu::bar(ui, |ui| {
-                egui::widgets::global_dark_light_mode_switch(ui);
+            egui::MenuBar::new().ui(ui, |ui| {
+                egui::global_theme_preference_switch(ui);
                 ui.separator();
                 ui.selectable_value(
                     &mut self.main_article,
@@ -62,13 +62,17 @@ impl eframe::App for Blog {
                     "Tamo's personal blog",
                 );
                 ui.selectable_value(&mut self.main_article, Article::Arroy, "Arroy");
-                ui.selectable_value(&mut self.main_article, Article::MakingThisBlog, "Making this blog");
+                ui.selectable_value(
+                    &mut self.main_article,
+                    Article::MakingThisBlog,
+                    "Making this blog",
+                );
                 ui.selectable_value(&mut self.main_article, Article::Cuisine, "Cuisine");
             });
         });
 
         egui::TopBottomPanel::bottom("bottom_panel").show(ctx, |ui| {
-            egui::menu::bar(ui, |ui| {
+            egui::MenuBar::new().ui(ui, |ui| {
                 ui.add(egui::github_link_file!(
                     "https://github.com/irevoire/blog",
                     "Source code."

@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{centered_scrollable, Blog};
 
-macros::create_file!(arroy/index.html);
+macros::create_file!(arroy / index.html);
 
 impl Blog {
     pub fn display_arroy_article(&mut self, ctx: &Context) {
@@ -88,7 +88,7 @@ impl BaryCenter {
                 points.push(rng.gen());
             }
             plot_ui.points(
-                Points::new(points)
+                Points::new("points", points)
                     .shape(MarkerShape::Circle)
                     .radius(radius),
             );

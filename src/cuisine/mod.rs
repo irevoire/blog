@@ -9,14 +9,14 @@ use crate::{centered_scrollable, Blog};
 use self::pate_brisee::PateBrisee;
 use self::tarte_au_citron::TarteAuCitron;
 
-macros::create_file!(cuisine/index.html);
-macros::create_file!(cuisine/pate-brisee.html);
-macros::create_file!(cuisine/tarte-au-citron.html);
+macros::create_file!(cuisine / index.html);
+macros::create_file!(cuisine / pate - brisee.html);
+macros::create_file!(cuisine / tarte - au - citron.html);
 
 impl Blog {
     pub fn display_cuisine_article(&mut self, ctx: &Context) {
         egui::TopBottomPanel::top("top_cuisine_panel").show(ctx, |ui| {
-            egui::menu::bar(ui, |ui| {
+            egui::MenuBar::new().ui(ui, |ui| {
                 ui.selectable_value(&mut self.cuisine.selected, Plats::About, "À propos");
                 ui.selectable_value(&mut self.cuisine.selected, Plats::PateBrisee, "Pâte brisée");
                 ui.selectable_value(
