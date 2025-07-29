@@ -1,5 +1,7 @@
 mod arroy;
 mod cuisine;
+mod macros;
+mod making_this_blog;
 
 use arroy::Arroy;
 use eframe::CreationContext;
@@ -10,8 +12,8 @@ use serde::{Deserialize, Serialize};
 #[derivative(Default)]
 pub struct Blog {
     main_article: Article,
-    #[serde(skip)]
     arroy: Arroy,
+    making_this_blog: making_this_blog::MakingThisBlog,
     cuisine: cuisine::Cuisine,
 }
 
@@ -20,6 +22,7 @@ pub enum Article {
     #[default]
     Main,
     Arroy,
+    MakingThisBlog,
     Cuisine,
 }
 
@@ -28,6 +31,7 @@ impl Article {
         match self {
             Article::Main => "",
             Article::Arroy => "/arroy",
+            Article::MakingThisBlog => "/making-this-blog",
             Article::Cuisine => "/cuisine",
         }
     }
@@ -36,6 +40,7 @@ impl Article {
         match part {
             "" | "index.html" => Some(Article::Main),
             "arroy" => Some(Article::Arroy),
+            "making-this-blog" => Some(Article::MakingThisBlog),
             "cuisine" => Some(Article::Cuisine),
             _ => None,
         }
@@ -57,6 +62,7 @@ impl eframe::App for Blog {
                     "Tamo's personal blog",
                 );
                 ui.selectable_value(&mut self.main_article, Article::Arroy, "Arroy");
+                ui.selectable_value(&mut self.main_article, Article::MakingThisBlog, "Making this blog");
                 ui.selectable_value(&mut self.main_article, Article::Cuisine, "Cuisine");
             });
         });
@@ -73,6 +79,7 @@ impl eframe::App for Blog {
         match self.main_article {
             Article::Main => self.display_main_article(ctx),
             Article::Arroy => self.display_arroy_article(ctx),
+            Article::MakingThisBlog => self.display_making_this_blog_article(ctx),
             Article::Cuisine => self.display_cuisine_article(ctx),
         }
 
@@ -124,6 +131,9 @@ impl Blog {
                 Article::Arroy => {
                     this.arroy = arroy::Arroy::from_url_parts(path);
                 }
+                Article::MakingThisBlog => {
+                    this.making_this_blog = making_this_blog::MakingThisBlog::from_url_parts(path);
+                }
                 Article::Cuisine => {
                     this.cuisine = cuisine::Cuisine::from_url_parts(path);
                 }
@@ -139,6 +149,9 @@ impl Blog {
             Article::Main => {}
             Article::Arroy => {
                 url.push_str(self.arroy.as_url_part());
+            }
+            Article::MakingThisBlog => {
+                url.push_str(self.making_this_blog.as_url_part());
             }
             Article::Cuisine => {
                 url.push_str(self.cuisine.as_url_part());
