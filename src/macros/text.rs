@@ -4,7 +4,6 @@ use std::sync::Arc;
 
 use egui::{text::LayoutJob, Align, Color32, FontId, FontSelection, RichText, Style};
 
-
 pub struct TextCompositor {
     layout: LayoutJob,
     style: Arc<Style>,
@@ -61,7 +60,12 @@ impl TextCompositor {
             text = text.italics();
         }
 
-        text.append_to(&mut self.layout, &self.style, fallback_font, style.align.unwrap_or_default());
+        text.append_to(
+            &mut self.layout,
+            &self.style,
+            fallback_font,
+            style.align.unwrap_or_default(),
+        );
     }
 
     pub fn finish(self) -> LayoutJob {
