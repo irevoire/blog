@@ -1,10 +1,13 @@
 use egui::{Context, ScrollArea};
+use egui_commonmark::commonmark;
 use serde::{Deserialize, Serialize};
 
 use crate::{centered_scrollable, Blog};
 
-macros::create_file!(making - this - blog / index.html);
-macros::create_file!(making - this - blog / formatting - test.html);
+macros::create_file!(
+    "making-this-blog/index.html",
+    "making-this-blog/formatting-test.html"
+);
 
 impl Blog {
     pub fn display_making_this_blog_article(&mut self, ctx: &Context) {
@@ -17,20 +20,19 @@ impl Blog {
                 );
             });
         });
-        egui::TopBottomPanel::bottom("bottom_making_this_blog_panel").show(ctx, |ui| {
-            match self.making_this_blog.selected {
-                Pages::FormattingTest => (),
-            }
-        });
 
         egui::CentralPanel::default().show(ctx, |ui| {
             ScrollArea::both().show(ui, |ui| match self.making_this_blog.selected {
                 Pages::FormattingTest => centered_scrollable(ui, |ui| {
-                    macros::text! {
-                        Can I display a simple string? Yes!
+                    let _response = commonmark!(
+                        ui,
+                        &mut self.md_cache,
+                        "Can I display a simple string? Yes!
 
-                        # Can I display a title? Yes!!
-                    };
+# Can I display a title? Yes!!
+                        
+Lol"
+                    );
                 }),
             })
         });

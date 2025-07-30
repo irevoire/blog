@@ -5,7 +5,7 @@ mod text;
 
 #[proc_macro]
 pub fn create_file(tokens: TokenStream) -> TokenStream {
-    create_file::create_file(tokens)
+    create_file::create_file(tokens.into()).into()
 }
 
 #[proc_macro]

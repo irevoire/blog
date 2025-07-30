@@ -35,7 +35,7 @@ getrandom = { version = "0.2.15", features = ["js"] }
 derivative = "2.2.0"
 wasm-bindgen-futures = "0.4"
 web-sys = { version = "0.3.4", features = ["Window", "Location", "UrlSearchParams", "Url", "History"]}
-egui_commonmark = { version = "0.21.1", features = ["macros"] }
+egui_commonmark = { version = "0.21.1", features = ["better_syntax_highlighting", "fetch", "macros", "svg"] }
 
 [profile.release]
 opt-level = 2 # fast and small wasm

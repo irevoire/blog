@@ -6,11 +6,14 @@ mod making_this_blog;
 use arroy::Arroy;
 use eframe::CreationContext;
 use egui::{Context, ScrollArea, Ui};
+use egui_commonmark::CommonMarkCache;
 use serde::{Deserialize, Serialize};
 
-#[derive(derivative::Derivative, Serialize, Deserialize, Clone, PartialEq)]
+#[derive(derivative::Derivative, Serialize, Deserialize)]
 #[derivative(Default)]
 pub struct Blog {
+    #[serde(skip, default)]
+    md_cache: CommonMarkCache,
     main_article: Article,
     arroy: Arroy,
     making_this_blog: making_this_blog::MakingThisBlog,
@@ -50,7 +53,7 @@ impl Article {
 impl eframe::App for Blog {
     fn update(&mut self, ctx: &Context, _frame: &mut eframe::Frame) {
         #[allow(unused_variables)]
-        let old = self.clone();
+        let old = self.as_url();
 
         egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
             egui::MenuBar::new().ui(ui, |ui| {
@@ -87,7 +90,8 @@ impl eframe::App for Blog {
             Article::Cuisine => self.display_cuisine_article(ctx),
         }
 
-        if &old != self {
+        let new = self.as_url();
+        if old != new {
             use web_sys::wasm_bindgen::JsValue;
 
             if let Some(window) = web_sys::window() {

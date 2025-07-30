@@ -1,40 +1,82 @@
-use std::{env::current_dir, path::PathBuf, process::Command};
+use std::{env::current_dir, path::PathBuf, process::Command, str::FromStr};
 
-use proc_macro::{token_stream::IntoIter, TokenStream, TokenTree};
+use proc_macro2::{TokenStream, TokenTree, token_stream::IntoIter};
+use quote::quote_spanned;
 
 pub fn create_file(tokens: TokenStream) -> TokenStream {
     let trunk_dist_dir = PathBuf::from(current_dir().unwrap().join("dist").join(".stage"));
     let _ = std::fs::create_dir_all(&trunk_dist_dir);
 
     let mut tokens = tokens.into_iter();
-    let path = extract_path(&mut tokens).unwrap();
+    let paths = extract_path(&mut tokens);
 
-    let file_path = trunk_dist_dir.join(&path);
-    let _ = std::fs::create_dir_all(file_path.parent().unwrap());
+    for path in paths {
+        let Ok(path) = path else {
+            return path.unwrap_err();
+        };
+        let file_path = trunk_dist_dir.join(&path);
+        let _ = std::fs::create_dir_all(file_path.parent().unwrap());
 
-    let go_back_by = path.chars().filter(|c| *c == '/').count();
-    let relative_path_to_index_html = format!("./{}{}", "../".repeat(go_back_by), "index.html");
-    Command::new("ln").current_dir(trunk_dist_dir).arg("-sf").arg(relative_path_to_index_html).arg(path).output().unwrap();
+        let go_back_by = path.components().count();
+        let relative_path_to_index_html = format!("./{}{}", "../".repeat(go_back_by), "index.html");
+        Command::new("ln")
+            .current_dir(&trunk_dist_dir)
+            .arg("-sf")
+            .arg(relative_path_to_index_html)
+            .arg(path)
+            .output()
+            .unwrap();
+    }
     TokenStream::new()
 }
 
-fn extract_path(tokens: &mut IntoIter) -> Option<String> {
-    let mut path = String::new();
-    for token in tokens {
-        match token {
-            TokenTree::Ident(ident) => {
-                path.push_str(&ident.to_string());
+fn extract_path(tokens: &mut IntoIter) -> impl Iterator<Item = Result<PathBuf, TokenStream>> {
+    let mut expecting_a_comma = false;
+
+    tokens.filter_map(move |token| match token {
+        TokenTree::Literal(literal) => {
+            if expecting_a_comma {
+                return Some(Err(quote_spanned! {
+                    literal.span() =>
+                    compile_error!("Was expecting a comma `,`");
+                }));
             }
-            TokenTree::Punct(punct) => {
-                path.push_str(&punct.to_string());
-            }
-            TokenTree::Literal(literal) => {
-                path.push_str(&literal.to_string());
-            }
-            TokenTree::Group(group) => {
-                panic!("Was expecting a path but received {} after {}", group.to_string(), path);
+            let to_string = literal.to_string();
+            if to_string.chars().next() != Some('"') || to_string.chars().last() != Some('"') {
+                Some(Err(quote_spanned! {
+                    literal.span() =>
+                    compile_error!("expected path delimited by `\"`");
+                }))
+            } else {
+                match PathBuf::from_str(&to_string) {
+                    Ok(path) => {
+                        expecting_a_comma = true;
+                        Some(Ok(path))
+                    }
+                    Err(e) => {
+                        let e = e.to_string();
+                        Some(Err(quote_spanned! {
+                            literal.span() =>
+                            compile_error!(#e);
+                        }))
+                    }
+                }
             }
         }
-    }
-    Some(path)
+        TokenTree::Punct(punct) if expecting_a_comma && punct.as_char() == ',' => {
+            expecting_a_comma = false;
+            None
+        }
+        other => {
+            let err = if expecting_a_comma {
+                "Was expecting a comma"
+            } else {
+                "Was expecting a path in a string literal"
+            };
+            Some(Err(quote_spanned! {
+                other.span() =>
+                compile_error!(#err);
+            }))
+        }
+    })
 }
