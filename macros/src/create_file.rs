@@ -48,7 +48,7 @@ fn extract_path(tokens: &mut IntoIter) -> impl Iterator<Item = Result<PathBuf, T
                     compile_error!("expected path delimited by `\"`");
                 }))
             } else {
-                match PathBuf::from_str(&to_string) {
+                match PathBuf::from_str(to_string.trim_matches('"')) {
                     Ok(path) => {
                         expecting_a_comma = true;
                         Some(Ok(path))
