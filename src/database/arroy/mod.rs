@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{centered_scrollable, Blog};
 
-macros::create_file!("arroy/index.html");
+macros::create_file!("database/arroy/index.html");
 
 impl Blog {
     pub fn display_arroy_article(&mut self, ctx: &Context) {
@@ -16,7 +16,7 @@ impl Blog {
                 ui.label("The principle of « two means » is to compute a barycenter.");
                 ui.label("As a reminder, here's an algorithm showing how to find the barycenter of a buch of points");
                 ui.small("For our example we considers that all the points have the same weights");
-                self.arroy.charts.barycenter.show(ui);
+                self.database.arroy.charts.barycenter.show(ui);
             });
         });
     }

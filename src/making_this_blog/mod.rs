@@ -14,11 +14,7 @@ impl Blog {
     pub fn display_making_this_blog_article(&mut self, ctx: &Context) {
         egui::TopBottomPanel::top("top_making_this_blog_panel").show(ctx, |ui| {
             egui::MenuBar::new().ui(ui, |ui| {
-                ui.selectable_value(
-                    &mut self.making_this_blog.selected,
-                    Pages::About,
-                    "About",
-                );
+                ui.selectable_value(&mut self.making_this_blog.selected, Pages::About, "About");
                 ui.selectable_value(
                     &mut self.making_this_blog.selected,
                     Pages::MakingTheUrlWorks,

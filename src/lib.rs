@@ -1,9 +1,8 @@
-mod arroy;
+mod database;
 mod cuisine;
 mod macros;
 mod making_this_blog;
 
-use arroy::Arroy;
 use eframe::CreationContext;
 use egui::{Context, ScrollArea, Ui};
 use egui_commonmark::CommonMarkCache;
@@ -15,7 +14,7 @@ pub struct Blog {
     #[serde(skip, default)]
     md_cache: CommonMarkCache,
     main_article: Article,
-    arroy: Arroy,
+    database: database::Database,
     making_this_blog: making_this_blog::MakingThisBlog,
     cuisine: cuisine::Cuisine,
 }
@@ -24,7 +23,7 @@ pub struct Blog {
 pub enum Article {
     #[default]
     Main,
-    Arroy,
+    Database,
     MakingThisBlog,
     Cuisine,
 }
@@ -33,7 +32,7 @@ impl Article {
     pub const fn as_url_part(&self) -> &'static str {
         match self {
             Article::Main => "",
-            Article::Arroy => "/arroy",
+            Article::Database => "/database",
             Article::MakingThisBlog => "/making-this-blog",
             Article::Cuisine => "/cuisine",
         }
@@ -42,7 +41,7 @@ impl Article {
     pub fn from_url_part(part: &str) -> Option<Self> {
         match part {
             "" | "index.html" => Some(Article::Main),
-            "arroy" => Some(Article::Arroy),
+            "database" => Some(Article::Database),
             "making-this-blog" => Some(Article::MakingThisBlog),
             "cuisine" => Some(Article::Cuisine),
             _ => None,
@@ -64,7 +63,7 @@ impl eframe::App for Blog {
                     Article::Main,
                     "Tamo's personal blog",
                 );
-                ui.selectable_value(&mut self.main_article, Article::Arroy, "Arroy");
+                ui.selectable_value(&mut self.main_article, Article::Database, "Database");
                 ui.selectable_value(
                     &mut self.main_article,
                     Article::MakingThisBlog,
@@ -85,7 +84,7 @@ impl eframe::App for Blog {
 
         match self.main_article {
             Article::Main => self.display_main_article(ctx),
-            Article::Arroy => self.display_arroy_article(ctx),
+            Article::Database => self.display_database_article(ctx),
             Article::MakingThisBlog => self.display_making_this_blog_article(ctx),
             Article::Cuisine => self.display_cuisine_article(ctx),
         }
@@ -136,8 +135,8 @@ impl Blog {
             this.main_article = page;
             match page {
                 Article::Main => {}
-                Article::Arroy => {
-                    this.arroy = arroy::Arroy::from_url_parts(path);
+                Article::Database => {
+                    this.database = database::Database::from_url_parts(path);
                 }
                 Article::MakingThisBlog => {
                     this.making_this_blog = making_this_blog::MakingThisBlog::from_url_parts(path);
@@ -155,8 +154,8 @@ impl Blog {
         url.push_str(self.main_article.as_url_part());
         match self.main_article {
             Article::Main => {}
-            Article::Arroy => {
-                url.push_str(self.arroy.as_url_part());
+            Article::Database => {
+                url.push_str(&self.database.as_url_part());
             }
             Article::MakingThisBlog => {
                 url.push_str(self.making_this_blog.as_url_part());
