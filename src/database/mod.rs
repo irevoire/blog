@@ -12,29 +12,17 @@ impl Blog {
     pub fn display_database_article(&mut self, ctx: &Context) {
         egui::TopBottomPanel::top("database_top").show(ctx, |ui| {
             ui.horizontal(|ui| {
-                ui.selectable_value(
-                    &mut self.database.selected,
-                    Pages::About,
-                    "About",
-                );
-                ui.selectable_value(
-                    &mut self.database.selected,
-                    Pages::Cellulite,
-                    "Cellulite",
-                );
-                ui.selectable_value(
-                    &mut self.database.selected,
-                    Pages::Arroy,
-                    "Arroy",
-                );
+                ui.selectable_value(&mut self.database.selected, Pages::About, "About");
+                ui.selectable_value(&mut self.database.selected, Pages::Cellulite, "Cellulite");
+                ui.selectable_value(&mut self.database.selected, Pages::Arroy, "Arroy");
             });
         });
         egui::CentralPanel::default().show(ctx, |ui| {
-            centered_scrollable(ui, | ui| {
+            centered_scrollable(ui, |ui| {
                 match self.database.selected {
                     Pages::About => {
                         commonmark_str!(ui, &mut self.md_cache, "content/database/index.md");
-                    },
+                    }
                     Pages::Cellulite => todo!(), // self.display_cellulite_section(ui),
                     Pages::Arroy => self.display_arroy_article(ctx),
                 }
@@ -90,7 +78,10 @@ impl Database {
 
     pub fn from_url_parts(mut parts: std::str::Split<char>) -> Self {
         let mut this = Self::default();
-        this.selected = parts.next().map(|part| Pages::from_url_part(part).unwrap()).unwrap_or_default();
+        this.selected = parts
+            .next()
+            .map(|part| Pages::from_url_part(part).unwrap())
+            .unwrap_or_default();
         match this.selected {
             Pages::About => (),
             Pages::Cellulite => todo!(),

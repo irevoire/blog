@@ -1,5 +1,5 @@
-mod database;
 mod cuisine;
+mod database;
 mod macros;
 mod making_this_blog;
 
@@ -13,6 +13,9 @@ use serde::{Deserialize, Serialize};
 pub struct Blog {
     #[serde(skip, default)]
     md_cache: CommonMarkCache,
+    #[serde(skip, default)]
+    last_url: Option<String>,
+
     main_article: Article,
     database: database::Database,
     making_this_blog: making_this_blog::MakingThisBlog,
@@ -39,6 +42,7 @@ impl Article {
     }
 
     pub fn from_url_part(part: &str) -> Option<Self> {
+        log::debug!("Parsing url part: {part}");
         match part {
             "" | "index.html" => Some(Article::Main),
             "database" => Some(Article::Database),
@@ -51,8 +55,12 @@ impl Article {
 
 impl eframe::App for Blog {
     fn update(&mut self, ctx: &Context, _frame: &mut eframe::Frame) {
-        #[allow(unused_variables)]
         let old = self.as_url();
+        let real_url = get_url().unwrap().pathname();
+        if real_url != old {
+            log::debug!("Last url `{old}` is different from the current one `{real_url}`, the prev button was probably pressed, reloading from it");
+            *self = Self::from_url(&real_url);
+        }
 
         egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
             egui::MenuBar::new().ui(ui, |ui| {
@@ -99,22 +107,24 @@ impl eframe::App for Blog {
                     let url = web_sys::Url::new(&url).unwrap();
                     let origin = url.origin();
                     let url = web_sys::Url::new(&format!("{}{}", origin, self.as_url())).unwrap();
+                    let url = url.to_string().as_string().unwrap();
 
-                    log::debug!(
-                        "Setting url to: {:?}",
-                        url.to_string().as_string().as_deref()
-                    );
+                    log::debug!("Setting url to: {url}");
                     history
-                        .push_state_with_url(
-                            &JsValue::null(),
-                            "",
-                            url.to_string().as_string().as_deref(),
-                        )
+                        .push_state_with_url(&JsValue::null(), "", Some(&url))
                         .unwrap();
+                    self.last_url = Some(url);
                 }
             }
         }
     }
+}
+
+fn get_url() -> Option<web_sys::Url> {
+    let window = web_sys::window()?;
+    let url = window.location().href().unwrap();
+    let url = web_sys::Url::new(&url).unwrap();
+    Some(url)
 }
 
 impl Blog {
@@ -122,28 +132,32 @@ impl Blog {
         #[allow(unused_mut)]
         let mut this = Self::default();
 
-        if let Some(window) = web_sys::window() {
-            let url = window.location().href().unwrap();
-            let url = web_sys::Url::new(&url).unwrap();
+        if let Some(url) = get_url() {
             let path = url.pathname();
             log::debug!("Making a new blog from path: {}", path);
-            let mut path = path.trim_matches('/').split('/');
-            let page = path
-                .next()
-                .map_or(Article::Main, |part| Article::from_url_part(part).unwrap());
-            log::debug!("Identified current opened page as: {:?}", page);
-            this.main_article = page;
-            match page {
-                Article::Main => {}
-                Article::Database => {
-                    this.database = database::Database::from_url_parts(path);
-                }
-                Article::MakingThisBlog => {
-                    this.making_this_blog = making_this_blog::MakingThisBlog::from_url_parts(path);
-                }
-                Article::Cuisine => {
-                    this.cuisine = cuisine::Cuisine::from_url_parts(path);
-                }
+            this = Self::from_url(&path);
+        }
+        this
+    }
+
+    fn from_url(url: &str) -> Self {
+        let mut this = Self::default();
+        let mut path = url.trim_matches('/').split('/');
+        let page = path
+            .next()
+            .map_or(Article::Main, |part| Article::from_url_part(part).unwrap());
+        log::debug!("Identified current opened page as: {:?}", page);
+        this.main_article = page;
+        match page {
+            Article::Main => {}
+            Article::Database => {
+                this.database = database::Database::from_url_parts(path);
+            }
+            Article::MakingThisBlog => {
+                this.making_this_blog = making_this_blog::MakingThisBlog::from_url_parts(path);
+            }
+            Article::Cuisine => {
+                this.cuisine = cuisine::Cuisine::from_url_parts(path);
             }
         }
         this
