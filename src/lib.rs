@@ -57,10 +57,17 @@ impl eframe::App for Blog {
     fn update(&mut self, ctx: &Context, _frame: &mut eframe::Frame) {
         let old = self.as_url();
         let real_url = get_url().unwrap().pathname();
-        if real_url != old {
+        let old = if real_url
+            .trim_end_matches('/')
+            .trim_end_matches("/index.html")
+            != old
+        {
             log::debug!("Last url `{old}` is different from the current one `{real_url}`, the prev button was probably pressed, reloading from it");
             *self = Self::from_url(&real_url);
-        }
+            self.as_url()
+        } else {
+            old
+        };
 
         egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
             egui::MenuBar::new().ui(ui, |ui| {
@@ -98,7 +105,9 @@ impl eframe::App for Blog {
         }
 
         let new = self.as_url();
-        if old != new {
+        if old.trim_end_matches('/').trim_end_matches("/index.html")
+            != new.trim_end_matches('/').trim_end_matches("/index.html")
+        {
             use web_sys::wasm_bindgen::JsValue;
 
             if let Some(window) = web_sys::window() {
